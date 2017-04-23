@@ -1,8 +1,9 @@
-from utils import read_data
+from utils import read_data, load_bw
 from train import train
 
 def start():
-    return train()
+    print("Calling train function..")
+    return train(cv=False)
 
 
 if __name__ == "__main__":
