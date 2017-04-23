@@ -3,8 +3,9 @@ import pickle
 from nltk import word_tokenize
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, VectorizerMixin
-from sklearn.base import BaseEstimator
 
 from utils import load_bw
 
@@ -50,7 +51,7 @@ def get_tfidf(comments_df, test=False):
     return tfidf_feat
 
 
-class BadWordsCounter(BaseEstimator, VectorizerMixin):
+class BadWordsCounter(BaseEstimator, TransformerMixin):
 
     def __init__(self, badwords_fpath=None):
         print("BadWordsCounter initialized.")
@@ -60,41 +61,43 @@ class BadWordsCounter(BaseEstimator, VectorizerMixin):
             self.badwords_fpath = "badwords.txt" 
         self.bw_list = load_bw(self.badwords_fpath)
    
-    def get_feature_names(self):
-        return np.array([
-            'n_words', 'n_chars', 'all_caps', 'max_word_len', 'mean_word_len', 
-            'n_bad', 'exclamation_count', 'at_sign_count', 'spaces_count', 
-            'all_caps_ratio', 'bad_ratio'
-        ])
+    # def get_feature_names(self):
+    #     return np.array([
+    #         'n_words', 'n_chars', 'all_caps', 'max_word_len', 'mean_word_len',
+    #         'n_bad', 'exclamation_count', 'at_sign_count', 'spaces_count'
+    #         # 'all_caps_ratio', 'bad_ratio'
+    #     ])
 
     def fit(self, X, y=None):
         return self
 
-    def transform(self, comments, y=None):
-        print("BadWordsCounter transform starts.")
-        df = pd.DataFrame()
-        for comment in comments:
-            # split comment for later use
-            comment_split = comment.split()
+    def _extract_features(self, comment):
+        # split comment for later use
+        comment_split = comment.split()
 
-            n_words = len(comment_split)
-            n_chars = len(comment)
-            all_caps = int(np.sum([w.isupper() for w in comment_split]))
-            max_word_len = int(np.max([len(w) for w in comment_split]))
-            mean_word_len = int(np.mean([len(w) for w in comment_split]))
-            n_bad = int(np.sum([comment.lower().count(w) for w in self.bw_list]))
-            exclamation_count = comment.count("!")
-            at_sign_count = comment.count("@")
-            spaces_count = comment.count(" ")
-            #all_caps_ratio = np.array(all_caps, dtype=np.float)/np.array(n_words, dtype=np.float)
-            all_caps_ratio = float(all_caps)/float(n_words)
-            bad_ratio = float(n_bad)/float(n_words)
+        n_words = len(comment_split)
+        # n_chars = len(comment)
+        # all_caps = int(np.sum([w.isupper() for w in comment_split]))
+        # max_word_len = int(np.max([len(w) for w in comment_split]))
+        # mean_word_len = int(np.mean([len(w) for w in comment_split]))
+        n_bad = int(np.sum([comment.lower().count(w) for w in self.bw_list]))
+        # exclamation_count = comment.count("!")
+        # at_sign_count = comment.count("@")
+        # spaces_count = comment.count(" ")
+        # all_caps_ratio = np.array(all_caps, dtype=np.float)/np.array(n_words, dtype=np.float)
+        # all_caps_ratio = float(all_caps) / float(n_words)
+        bad_ratio = float(n_bad) / float(n_words)
 
-            row = pd.Series([
-                n_words, n_chars, all_caps, max_word_len, mean_word_len, n_bad, 
-                exclamation_count, at_sign_count, spaces_count, all_caps_ratio, bad_ratio
-            ])
-            df = df.append(row, ignore_index=True)
-        print("BadWordsCounter transform ends.")
-        return df.as_matrix()
+        # d = dict(n_words=n_words, n_chars=n_chars, all_caps=all_caps,
+        #          max_word_len=max_word_len, mean_word_len=mean_word_len,
+        #          n_bad=n_bad, exclamation_count=exclamation_count,
+        #          at_sign_count=at_sign_count, spaces_count=spaces_count,
+        #          #all_caps_ratio=all_caps_ratio,
+        #          #bad_ratio=bad_ratio
+        # )
 
+        d = dict(n_bad=n_bad, bad_ratio=bad_ratio)
+        return d
+
+    def transform(self, comments):
+        return [self._extract_features(comment) for comment in comments]
