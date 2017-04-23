@@ -1,20 +1,37 @@
 import re
+import string
+
+from nltk import WordNetLemmatizer
+from nltk.corpus import stopwords, wordnet
 from nltk.stem import SnowballStemmer
+from nltk.tokenize import word_tokenize
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
 
-    def __init__(self, lower=True, stem=True):
+    def __init__(self, lower=True, stem=True, lemmatize=False, remove_sw=True, remove_punct=False):
+        """
+        Initialize the preprocessor
+        """
         self.lower = lower
+        self.remove_sw = remove_sw
+        self.stopwords = stopwords.words('english')
         self.stem = stem
         self.stemmer = SnowballStemmer("english", ignore_stopwords=True)
+        self.lemmatize = lemmatize
+        self.lemmatizer = WordNetLemmatizer()
+        self.remove_punct = remove_punct
+        self.punct = set(string.punctuation)
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
+        """
+        Run the preprocessing on each comment
+        """
         # for i in range(0, X.shape[0]):
         #     comment = X.iloc[i].get('Comment')
         #     print("Comment is {}".format(comment))
@@ -104,10 +121,24 @@ class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
         Online comments may contain links and iframes.
         """
         return re.sub(r'<[^<]+?>', '', comment)
+    
+    def _remove_stopwords(self, comment):
+        word_list = word_tokenize(comment)
+        # remove stop words
+        if self.remove_sw:
+            word_list = [word for word in word_list if word not in self.stopwords]
+        # remove punctuations
+        if self.remove_punct:
+            word_list = [word for word in word_list if not all(char in self.punct for char in word)]
+        # join comment
+        if any([self.remove_sw, self.remove_punct]):
+            comment = " ".join(word_list)
+            del word_list
+        return comment
 
     def _stem(self, comment):
         """
-        Stemming: reducing token to root form.
+        Stemming: reducing token to root form
         """
         if self.stem:
             comment = " ".join(self.stemmer.stem(word) for word in comment.split(" "))
@@ -125,7 +156,17 @@ class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
         comment = self._expand_contractions(comment)
         comment = self._expand_internet_slangs(comment)
         comment = self._expand_and_correct_contractions(comment)
+        comment = self._remove_stopwords(comment)
         if self.stem:
             comment = self._stem(comment)
         return comment
 
+    def lemmatize(self, token, tag):
+        tag = {
+            'N': wordnet.NOUN,
+            'V': wordnet.VERB,
+            'R': wordnet.ADV,
+            'J': wordnet.ADJ
+        }.get(tag[0], wordnet.NOUN)
+
+        return self.lemmatizer.lemmatize(token, tag)
