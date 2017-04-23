@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from sklearn.base import TransformerMixin
 from sklearn.metrics import roc_curve, auc
 
 from constants import *
@@ -38,3 +40,16 @@ def save_roc_curve(actual, predictions, fname="roc.png"):
     plt.savefig(fname, bbox_inches='tight')
     # plt.show()
     return roc_auc
+
+
+class DenseTransformer(TransformerMixin):
+
+    def transform(self, X, y=None, **fit_params):
+        return X.todense()
+
+    def fit_transform(self, X, y=None, **fit_params):
+        self.fit(X, y, **fit_params)
+        return self.transform(X)
+
+    def fit(self, X, y=None, **fit_params):
+        return self
