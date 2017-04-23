@@ -15,6 +15,7 @@ class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
         """
         Initialize the preprocessor
         """
+        print("TextPreProcessTransformer initialized")
         self.lower = lower
         self.remove_sw = remove_sw
         self.stopwords = stopwords.words('english')
@@ -32,12 +33,14 @@ class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
         """
         Run the preprocessing on each comment
         """
+        print("TextPreProcessTransformer processer starts.")
         # for i in range(0, X.shape[0]):
         #     comment = X.iloc[i].get('Comment')
         #     print("Comment is {}".format(comment))
         #      X.iloc[i].set_value('Comment', self._normalize(comment))
         #      print("New comment is {}".format(X.iloc[i].get('Comment')))
         # return X
+        print("TextPreProcessTransformer processer ends.")
         return [self._normalize(comment) for comment in X]
 
     def _expand_internet_slangs(self, comment):
@@ -144,6 +147,17 @@ class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
             comment = " ".join(self.stemmer.stem(word) for word in comment.split(" "))
         return comment
 
+    def _stem_regex(self, comment):
+        comment = re.subn("ies( |$)", "y ", comment)[0].strip()                     
+        # comment = re.subn("([a-z])s( |$)", "\\1 ", x)[0].strip()
+        comment = re.subn("s( |$)", " ", comment)[0].strip()
+        comment = re.subn("ing( |$)", " ", comment)[0].strip() 
+        comment = comment.replace("tard ", " ")
+        # comment = re.subn(" [*$%&#@][*$%&#@]+"," xexp ", comment)[0].strip()
+        comment = re.subn(" [0-9]+ "," DD ", comment)[0].strip()
+        comment = re.subn("<\S*>","", comment)[0].strip()
+        return comment
+
     def _normalize(self, comment):
         """
         Method for calling other normalization methods
@@ -158,7 +172,7 @@ class TextPreProcessTransformer(BaseEstimator, TransformerMixin):
         comment = self._expand_and_correct_contractions(comment)
         comment = self._remove_stopwords(comment)
         if self.stem:
-            comment = self._stem(comment)
+            comment = self._stem_regex(comment)
         return comment
 
     def lemmatize(self, token, tag):
