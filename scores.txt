@@ -1,0 +1,66 @@
+Classification Report for pipeline_abc :
+----------------------
+             precision    recall  f1-score   support
+
+          0       0.84      0.91      0.88       584
+          1       0.68      0.51      0.58       206
+
+avg / total       0.80      0.81      0.80       790
+
+----------------------
+F1 score is 0.5840220385674931
+MCC is 0.4700613084028291
+Accuracy is 0.8088607594936709
+Area under roc curve: 0.7136171698364144
+------------------------
+
+
+Classification Report for pipeline_mnb :
+----------------------
+             precision    recall  f1-score   support
+
+          0       0.75      1.00      0.86       584
+          1       1.00      0.05      0.09       206
+
+avg / total       0.81      0.75      0.66       790
+
+----------------------
+F1 score is 0.09259259259259259
+MCC is 0.1906450405627236
+Accuracy is 0.7518987341772152
+Area under roc curve: 0.5242718446601942
+------------------------
+
+
+Classification Report for pipeline_sgdc :
+----------------------
+             precision    recall  f1-score   support
+
+          0       0.91      0.64      0.75       584
+          1       0.45      0.81      0.57       206
+
+avg / total       0.79      0.69      0.71       790
+
+----------------------
+F1 score is 0.5748709122203097
+MCC is 0.3996214487604285
+Accuracy is 0.6873417721518987
+Area under roc curve: 0.7272576140444208
+------------------------
+
+
+Classification Report for pipeline_svc :
+----------------------
+             precision    recall  f1-score   support
+
+          0       0.88      0.93      0.90       584
+          1       0.75      0.63      0.68       206
+
+avg / total       0.84      0.85      0.84       790
+
+----------------------
+F1 score is 0.6843501326259946
+MCC is 0.5909329809969263
+Accuracy is 0.8493670886075949
+Area under roc curve: 0.7771478920069158
+------------------------
