@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import chi2, mutual_info_classif, SelectKBest
@@ -57,7 +57,7 @@ pipeline_lr = Pipeline([
     ('preprocess', TextPreProcessTransformer(stem=True)),
     ('features', f_union),
     # ('fs', SelectKBest(chi2, k=20)),
-    ('classifier', LogisticRegression())
+    ('classifier', LogisticRegression(C=3))
 ])
 
 
@@ -72,7 +72,7 @@ pipeline_mnb = Pipeline([
 pipeline_gnb = Pipeline([
     ('preprocess', TextPreProcessTransformer(stem=True)),
     ('features', f_union_dense),
-    # ('fs', SelectKBest(chi2, k=20)),
+    ('fs', SelectKBest(chi2, k=1000)),
     ('classifier', GaussianNB())
 ])
 
@@ -98,5 +98,17 @@ pipeline_rfc = Pipeline([
     ('preprocess', TextPreProcessTransformer(stem=True)),
     ('features', f_union_dense),
     ('fs', SelectKBest(chi2, k=1000)),
-    ('clf', RandomForestClassifier())
+    ('clf', RandomForestClassifier(min_samples_split=5))
+])
+
+
+pipeline_vc = Pipeline([
+    ('preprocess', TextPreProcessTransformer(stem=True)),
+    ('features', f_union),
+    ('clf', VotingClassifier(
+      estimators=[
+          ('lr', LogisticRegression(C=3 )),
+          ('svc', SVC(C=0.3, kernel="linear", probability=True))
+      ], n_jobs=-1, voting="soft", weights=[0.4, 0.6]
+    ))
 ])

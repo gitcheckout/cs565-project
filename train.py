@@ -1,8 +1,8 @@
 from sklearn.metrics import classification_report, accuracy_score, f1_score, matthews_corrcoef
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedShuffleSplit
 
 from pipelines import (pipeline_abc, pipeline_gnb, pipeline_mnb, pipeline_lr,
-                       pipeline_rfc, pipeline_sgdc, pipeline_svc)
+                       pipeline_rfc, pipeline_sgdc, pipeline_svc, pipeline_vc)
 from utils import read_data, save_roc_curve
 
 
@@ -30,7 +30,7 @@ def train_and_report(pipeline, name, data, labels, test_data, test_labels,
 
     if roc_curve:
         # save roc curve
-        roc_auc = save_roc_curve(test_labels, predictions)
+        roc_auc = save_roc_curve(test_labels, predictions, fname=name+".png")
         print("Area under roc curve: {}".format(roc_auc))
         print("------------------------")
 
@@ -51,13 +51,14 @@ def train(cv=False, roc_curve=True):
     print("Data split completed.")
 
     pipelines = [
-        ("pipeline_abc", pipeline_abc),
+        # ("pipeline_abc", pipeline_abc),
         # ("pipeline_gnb", pipeline_gnb),
         # ("pipeline_lr", pipeline_lr),
-        ("pipeline_mnb", pipeline_mnb),
+        # ("pipeline_mnb", pipeline_mnb),
         # ("pipeline_rfc", pipeline_rfc),
-        ("pipeline_sgdc", pipeline_sgdc),
-        ("pipeline_svc", pipeline_svc),
+        # ("pipeline_sgdc", pipeline_sgdc),
+        # ("pipeline_svc", pipeline_svc),
+        ("pipeline_vc", pipeline_vc),
     ]
 
     for name, pipeline in pipelines:
@@ -65,15 +66,16 @@ def train(cv=False, roc_curve=True):
         if not cv:
             train_and_report(pipeline, name, train_data, train_labels, test_data, test_labels)
         else:
+            
             # if cv is True then do the k-fold cross validation
 
             # run an exhaustive search of the best parameters on a grid of
             # possible values
             parameters = {
-                    'preprocess__stem': (True, False),
+                    # 'preprocess__stem': (True, False),
                     # 'preprocess__remove_sw': (True, False),
                     # 'preprocess__remove_punct': (True, False),
-                    'tfidf_vec__stop_words': (None, 'english'),
+                    # 'tfidf_vec__stop_words': (None, 'english'),
                     # 'clf__alpha': (1e-2, 1e-3),
                     # 'clf_svc__kernel': ('linear', 'rbf'),
                     # 'clf_svc__C': (1, 3)
